@@ -78,3 +78,35 @@ device
 location
 
 is_anomaly (0 = normal, 1 = suspicious)
+
+🎯 Current Progress (Day 1)
+
+✅ Project setup
+✅ Virtual environment
+✅ Git + .gitignore configured
+✅ Fake data generator implemented
+✅ Dataset generation working
+
+🔥 Next Steps (Day 2)
+
+Data preprocessing pipeline
+
+Feature engineering
+
+Prepare dataset for ML model
+
+👥 Contributors
+
+Raj Tiwari
+
+Krishna
+
+💡 Notes
+
+Raw data is not pushed to GitHub (generated locally)
+
+Run the data generation script before proceeding
+
+🚀 Goal
+
+Build a production-level fraud detection system similar to real banking infrastructure.
