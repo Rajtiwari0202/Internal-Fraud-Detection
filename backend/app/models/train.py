@@ -1,31 +1,48 @@
 import pandas as pd
-from backend.app.models.anomaly_model import train_model, predict
+import os
 
-INPUT_PATH = "backend/app/data/processed/processed_logs.csv"
-OUTPUT_PATH = "backend/app/data/processed/predictions.csv"
+from backend.app.pipeline.preprocessing import load_data, preprocess
+from backend.app.pipeline.features import build_features
+from backend.app.models.anomaly_model import train_model
+
+INPUT_PATH = "backend/app/data/raw/synthetic_logs.csv"
+PROCESSED_PATH = "backend/app/data/processed/processed_logs.csv"
+PREDICTIONS_PATH = "backend/app/data/processed/predictions.csv"
+
 
 def run():
     print("🚀 Starting training...")
 
-    df = pd.read_csv(INPUT_PATH)
-    print("✅ Data loaded:", df.shape)
+    os.makedirs("backend/app/data/processed", exist_ok=True)
 
-    drop_cols = ["employee_id", "timestamp"]
-    X = df.drop(columns=drop_cols)
+    # 🔥 STEP 1: Ensure processed data exists
+    if not os.path.exists(PROCESSED_PATH):
+        print("⚠️ processed_logs.csv missing → generating...")
 
-    X = X.select_dtypes(include=['number'])
+        if not os.path.exists(INPUT_PATH):
+            raise Exception("❌ Raw dataset missing (synthetic_logs.csv)")
 
-    print("✅ Features ready:", X.shape)
+        df = load_data(INPUT_PATH)
+        df = preprocess(df)
+        df = build_features(df)
 
+        df.to_csv(PROCESSED_PATH, index=False)
+        print("✅ Processed data created")
+
+    # 🔥 STEP 2: Load processed data
+    df = pd.read_csv(PROCESSED_PATH)
+    print(f"✅ Data loaded: {df.shape}")
+
+    X = df.drop(columns=["employee_id"], errors="ignore")
+    print(f"✅ Features ready: {X.shape}")
+
+    # 🔥 STEP 3: Train model
     model = train_model(X)
-    print("✅ Model trained")
 
-    df["anomaly"] = predict(model, X)
-    df["is_suspicious"] = df["anomaly"].apply(lambda x: 1 if x == -1 else 0)
+    # 🔥 STEP 4: Predict anomalies
+    df["anomaly"] = model.predict(X)
 
-    df.to_csv(OUTPUT_PATH, index=False)
+    # 🔥 STEP 5: Save predictions
+    df.to_csv(PREDICTIONS_PATH, index=False)
 
-    print("✅ Predictions saved at:", OUTPUT_PATH)
-
-if __name__ == "__main__":
-    run()
+    print("✅ Predictions saved")
