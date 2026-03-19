@@ -1,9 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://127.0.0.1:8000",
+  baseURL: "https://internal-fraud-detection.onrender.com",
 });
-
 export const fetchAlerts = async () => {
   const res = await API.get("/alerts");
   return res.data;
